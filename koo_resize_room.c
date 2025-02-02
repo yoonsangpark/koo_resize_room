@@ -77,13 +77,13 @@ int main(int argc, char** argv)
 
 	
 	//--------------------------------------------------
-	#define ROOM_LIMIT_SIZE 100 // 100MB
+	#define AVAILABLE_LIMIT  100 // 100MB
 
 	unsigned long long available_size = available / (1024.0 * 1024);
 	printf("available_size (MB): %llu MB\n", available_size);
-	printf("ROOM_LIMIT_SIZE (MB): %lu MB\n", ROOM_LIMIT_SIZE);
+	printf("AVAILABLE_LIMIT (MB): %lu MB\n", AVAILABLE_LIMIT);
 
-	if (available_size > ROOM_LIMIT_SIZE) {
+	if (available_size < AVAILABLE_LIMIT) {
 		delete_mp4_file();
 	}
 
