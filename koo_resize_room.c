@@ -25,6 +25,35 @@ int has_mp4_extension(const char *filename) {
     return (ext && strcmp(ext, ".mp4") == 0);
 }
 
+#define FILE_PATH_SIZE 1024
+int delete_mp4_file(void) {
+
+	const char *dir_path = "/mnt/sd/recordings";
+	char filepath[FILE_PATH_SIZE];
+
+	DIR *dir = opendir(dir_path);
+	if (dir == NULL) {
+		perror("opendir Error");
+		return EXIT_FAILURE;
+	}
+
+	struct dirent *entry;
+    while ((entry = readdir(dir)) != NULL) {
+        if (entry->d_type == DT_REG) { 
+            if (has_mp4_extension(entry->d_name)) {
+				snprintf(filepath, sizeof(filepath), "%s/%s", dir_path, entry->d_name);
+                printf("- %s\n", filepath);
+				remove(filepath);
+				break;
+            }
+        }
+    }
+
+	closedir(dir);	
+
+	return 0;
+}
+
 int main(int argc, char** argv)
 {
 
@@ -47,26 +76,16 @@ int main(int argc, char** argv)
 	printf("남은 공간: %llu 바이트 (%.2f GB)\n", free, free / (1024.0 * 1024 * 1024));	
 
 	
-	
 	//--------------------------------------------------
-	const char *dir_path = "/mnt/sd/recordings";
+	#define ROOM_LIMIT_SIZE 100 // 100MB
 
-	DIR *dir = opendir(dir_path);
-	if (dir == NULL) {
-		perror("opendir Error");
-		return EXIT_FAILURE;
+	unsigned long long available_size = available / (1024.0 * 1024);
+	printf("available_size (MB): %llu MB\n", available_size);
+	printf("ROOM_LIMIT_SIZE (MB): %lu MB\n", ROOM_LIMIT_SIZE);
+
+	if (available_size > ROOM_LIMIT_SIZE) {
+		delete_mp4_file();
 	}
-
-	struct dirent *entry;
-    while ((entry = readdir(dir)) != NULL) {
-        if (entry->d_type == DT_REG) { // 일반 파일만 처리
-            if (has_mp4_extension(entry->d_name)) {
-                printf("- %s\n", entry->d_name);
-            }
-        }
-    }
-
-	closedir(dir);
 
 	return 0;
 }
