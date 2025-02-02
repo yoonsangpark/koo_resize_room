@@ -11,18 +11,26 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <dirent.h>
 #include <unistd.h>
 #include <sys/ioctl.h>
 #include <errno.h>
+#include <string.h>
 
 #include <stdlib.h>
 #include <sys/statvfs.h>
 
+int has_mp4_extension(const char *filename) {
+    const char *ext = strrchr(filename, '.'); // 마지막 '.' 찾기
+    return (ext && strcmp(ext, ".mp4") == 0);
+}
+
 int main(int argc, char** argv)
 {
 
+	//--------------------------------------------------
 	struct statvfs stat;
-	const char *path = "/mnt/sd/";
+	const char *path = "/mnt/sd";
 
 	if (statvfs(path, &stat) != 0) {
 		perror("statvfs Error");
@@ -38,7 +46,27 @@ int main(int argc, char** argv)
 	printf("사용 가능한 공간: %llu 바이트 (%.2f GB)\n", available, available / (1024.0 * 1024 * 1024));
 	printf("남은 공간: %llu 바이트 (%.2f GB)\n", free, free / (1024.0 * 1024 * 1024));	
 
-	printf("Koo\n");
+	
+	
+	//--------------------------------------------------
+	const char *dir_path = "/mnt/sd/recordings";
+
+	DIR *dir = opendir(dir_path);
+	if (dir == NULL) {
+		perror("opendir Error");
+		return EXIT_FAILURE;
+	}
+
+	struct dirent *entry;
+    while ((entry = readdir(dir)) != NULL) {
+        if (entry->d_type == DT_REG) { // 일반 파일만 처리
+            if (has_mp4_extension(entry->d_name)) {
+                printf("- %s\n", entry->d_name);
+            }
+        }
+    }
+
+	closedir(dir);
 
 	return 0;
 }
